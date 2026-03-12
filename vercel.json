@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/static/:path*",
+      "destination": "/Dashboard/static/:path*"
+    },
+    {
       "source": "/",
       "destination": "/Dashboard/dashboard_multihorizonte.html"
     }
