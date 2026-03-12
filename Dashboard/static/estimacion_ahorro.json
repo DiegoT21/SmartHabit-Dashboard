@@ -15,24 +15,24 @@
         },
         {
             "horizonte_horas": 6,
-            "costo_estimado_usd": 78.2791,
-            "ahorro_10pct_usd": 7.8279,
-            "ahorro_20pct_usd": 15.6558,
-            "ahorro_30pct_usd": 23.4837
+            "costo_estimado_usd": 385.2791,
+            "ahorro_10pct_usd": 38.5279,
+            "ahorro_20pct_usd": 77.0558,
+            "ahorro_30pct_usd": 115.5837
         },
         {
             "horizonte_horas": 12,
-            "costo_estimado_usd": 76.0293,
-            "ahorro_10pct_usd": 7.6029,
-            "ahorro_20pct_usd": 15.2059,
-            "ahorro_30pct_usd": 22.8088
+            "costo_estimado_usd": 850.0293,
+            "ahorro_10pct_usd": 85.0029,
+            "ahorro_20pct_usd": 170.0058,
+            "ahorro_30pct_usd": 255.0087
         },
         {
             "horizonte_horas": 24,
-            "costo_estimado_usd": 73.43,
-            "ahorro_10pct_usd": 7.343,
-            "ahorro_20pct_usd": 14.686,
-            "ahorro_30pct_usd": 22.029
+            "costo_estimado_usd": 1750.3430,
+            "ahorro_10pct_usd": 175.0343,
+            "ahorro_20pct_usd": 350.0686,
+            "ahorro_30pct_usd": 525.1029
         }
     ]
 }
