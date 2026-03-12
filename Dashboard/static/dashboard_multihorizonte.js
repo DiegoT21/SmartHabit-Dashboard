@@ -40,7 +40,56 @@ fetch("static/analitica_consumo.json")
         mostrarAnalitica();
     });
 
+let alertas_data = null;
 
+// ======================================================
+// 4) Cargar alertas
+// ======================================================
+fetch("static/alertas_multihorizonte.json")
+    .then(r => r.json())
+    .then(data => {
+        alertas_data = data;
+        mostrarAlertas();
+    });
+
+function mostrarAlertas() {
+    const container = document.getElementById("alertasLista");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!alertas_data || !alertas_data.alertas || alertas_data.alertas.length === 0) {
+        container.innerHTML = "<p style='padding:20px; text-align:center; color:#e6e6e6; font-size: 1.1em;'>No hay alertas activas en este momento.</p>";
+        return;
+    }
+
+    alertas_data.alertas.forEach(a => {
+        let borderColor = "#D4AF37"; // gold
+        let icon = '<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7.1-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>';
+
+        if (a.severidad === "alta") {
+            borderColor = "#d32f2f"; // red
+            icon = '<svg width="16" height="16" viewBox="0 0 448 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M224 0c-17.7 0-32 14.3-32 32V51.2C119 66 64 130.6 64 208v18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416H416c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>';
+        } else if (a.severidad === "moderada") {
+            borderColor = "#f57c00"; // orange
+            icon = '<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7.1-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>';
+        } else {
+            borderColor = "#0288d1"; // blue
+            icon = '<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>';
+        }
+
+        container.innerHTML += `
+            <div style="background: rgba(255,255,255,0.04); border-radius: 8px; border-left: 5px solid ${borderColor}; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px; color: ${borderColor};">${icon} ${a.mensaje}</div>
+                <div style="font-size: 0.9em; margin-bottom: 8px;">
+                    <strong>Variable:</strong> <span style="text-transform: capitalize;">${a.variable}</span> | 
+                    <strong>Severidad:</strong> <span style="text-transform: capitalize;">${a.severidad}</span>
+                </div>
+                <div style="font-size: 0.9em; color: #ccc;"><em>Recomendación:</em> ${a.recomendacion}</div>
+                <div style="font-size: 0.8em; color: #888; margin-top: 10px; text-align: right;">Reportado el: ${a.timestamp}</div>
+            </div>
+        `;
+    });
+}
 
 // ===================================================================
 // A) MOSTRAR AHORRO
@@ -49,6 +98,7 @@ function mostrarAhorro() {
     if (!ahorro) return;
 
     const box = document.getElementById("kpiAhorroBox");
+    if (!box) return;
     box.innerHTML = "";
 
     box.innerHTML += `
@@ -127,6 +177,9 @@ function graficarUltimos7Dias() {
                     tension: 0.3
                 }
             ]
+        },
+        options: {
+            maintainAspectRatio: false
         }
     });
 }
@@ -152,6 +205,9 @@ function graficarTop5() {
                     backgroundColor: "#d32f2f"
                 }
             ]
+        },
+        options: {
+            maintainAspectRatio: false
         }
     });
 }
@@ -190,6 +246,9 @@ function graficarPromedioPorHora() {
                     tension: 0.2
                 }
             ]
+        },
+        options: {
+            maintainAspectRatio: false
         }
     });
 }
@@ -221,9 +280,26 @@ function actualizarDashboard() {
     const errores = datos.map(d => Math.abs(d[realKey] - d[predKey]));
     const mae = errores.reduce((a, b) => a + b, 0) / errores.length;
 
-    const mape = datos.reduce((acc, d) =>
-        acc + Math.abs((d[realKey] - d[predKey]) / (Math.abs(d[realKey]) + 1e-8)),
-    0) / datos.length * 100;
+    // El MAPE (Mean Absolute Percentage Error) explota cuando el valor real es casi 0 (muy normal en el agua).
+    // Filtramos los valores cercanos a 0 para que no distorsionen astronómicamente el porcentaje.
+    let valid_mape_count = 0;
+    const mape_sum = datos.reduce((acc, d) => {
+        const real = Math.abs(d[realKey]);
+        const pred = d[predKey];
+
+        // Solo calculamos MAPE si el consumo real es mayor a 0.05 (para evitar divisiones entre cuasi cero)
+        if (real > 0.05) {
+            valid_mape_count++;
+            return acc + Math.abs((real - pred) / real);
+        } else if (pred > 0.1) {
+            // Si el real es cero pero predijo bastante, es 100% de error para esa medida
+            valid_mape_count++;
+            return acc + 1.0;
+        }
+        return acc;
+    }, 0);
+
+    const mape = valid_mape_count > 0 ? (mape_sum / valid_mape_count) * 100 : 0;
 
     document.getElementById("kpi_mae").innerText = mae.toFixed(4) + " " + unidad;
     document.getElementById("kpi_mape").innerText = mape.toFixed(2) + " %";
@@ -265,3 +341,4 @@ function actualizarDashboard() {
         }
     });
 }
+

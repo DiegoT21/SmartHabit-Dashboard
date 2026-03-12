@@ -1,157 +1,251 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Dashboard de Predicciones Multihorizonte</title>
 
-<link rel="stylesheet" href="static/dashboard_multihorizonte.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Consumption Dashboard</title>
+
+    <!-- Fuente -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="static/dashboard_multihorizonte.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<header>Dashboard de Predicciones – Modelo Multihorizonte (1h, 6h, 12h, 24h)</header>
+    <div class="layout">
 
-<!-- ===================================================== -->
-<!-- 🔥 SECCIÓN DE ALERTAS INTELIGENTES -->
-<!-- ===================================================== -->
-<div class="alertas-container" id="alertasContainer">
-    <h2>Alertas Inteligentes del Sistema</h2>
-    <div id="alertasLista"></div>
-</div>
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar">
 
+            <!-- LOGO / TÍTULO -->
+            <div class="logo">
+                <span class="logo-main">Smart</span>
+                <span class="logo-sub">Consumption</span>
+                <span class="logo-desc">AI Dashboard</span>
+            </div>
 
-<div class="container">
+            <!-- NAVEGACIÓN -->
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="mostrarSeccion('predicciones', this)">
+                    <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor">
+                        <path
+                            d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm16-352V384c0 8.8-7.2 16-16 16s-16-7.2-16-16V160c0-8.8 7.2-16 16-16s16 7.2 16 16z" />
+                    </svg> <span>Predicciones</span>
+                </button>
+                <button class="nav-item" onclick="mostrarSeccion('ahorro', this)">
+                    <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor">
+                        <path
+                            d="M480 32c-17.7 0-32 14.3-32 32V87.2c-35-23.7-76.3-43.5-121.7-55.6c-5-1.3-10.1-2.5-15.3-3.6V16c0-8.8-7.2-16-16-16H232c-8.8 0-16 7.2-16 16v13.6c-4.4 1-8.7 2.1-13 3.3C104.5 59.8 29.8 126.3 3.8 221c-4 14.6-1.5 30 6.6 42.4C26.7 288.7 51 304 80 304h352c35.3 0 64-28.7 64-64V64c0-17.7-14.3-32-32-32z" />
+                    </svg> <span>Ahorro</span>
+                </button>
+                <button class="nav-item" onclick="mostrarSeccion('analitica', this)">
+                    <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor">
+                        <path
+                            d="M344 0H488c13.3 0 24 10.7 24 24V168c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-39-39-87 87c-9.4 9.4-24.6 9.4-33.9 0l-55-55-95 95c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l112-112c9.4-9.4 24.6-9.4 33.9 0l55 55 70-70-39-39c-6.9-6.9-8.9-17.2-5.2-26.2S334.3 0 344 0z" />
+                    </svg> <span>Análisis</span>
+                </button>
+                <button class="nav-item" onclick="mostrarSeccion('alertas', this)">
+                    <svg width="16" height="16" viewBox="0 0 448 512" fill="currentColor">
+                        <path
+                            d="M224 0c-17.7 0-32 14.3-32 32V51.2C119 66 64 130.6 64 208v18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416H416c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z" />
+                    </svg> <span>Alertas</span>
+                </button>
+                <button class="nav-item" onclick="mostrarSeccion('datos', this)">
+                    <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor">
+                        <path
+                            d="M64 256V160H224v96H64zm0 64H224v96H64V320zm224 96V320H448v96H288zM448 256H288V160H448v96zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
+                    </svg> <span>Datos</span>
+                </button>
+            </nav>
 
-    <!-- ===================================================== -->
-    <!-- SELECTORES PRINCIPALES -->
-    <!-- ===================================================== -->
-    <h2>Seleccionar horizonte</h2>
-    <select id="horizonSelect">
-        <option value="1">1 hora</option>
-        <option value="6">6 horas</option>
-        <option value="12">12 horas</option>
-        <option value="24">24 horas</option>
-    </select>
+        </aside>
+        <!-- ================= CONTENIDO ================= -->
+        <main class="main">
+            <div class="view">
 
-    <h2>Seleccionar variable a visualizar</h2>
-    <select id="variableSelect">
-        <option value="energia">Energía (kWh)</option>
-        <option value="agua">Agua (Litros)</option>
-        <option value="costo">Costo (USD)</option>
-    </select>
+                <!-- ================= PREDICCIONES ================= -->
+                <section id="predicciones" class="section active">
 
-    <!-- ===================================================== -->
-    <!-- KPIs PRINCIPALES DEL MODELO -->
-    <!-- ===================================================== -->
-    <div class="kpi-box">
-        <div class="kpi">
-            <div class="kpi-title">MAE</div>
-            <div class="kpi-value" id="kpi_mae">--</div>
-        </div>
+                    <!-- PANEL DE CONTROL -->
+                    <div class="panel">
+                        <h2>Panel de Control</h2>
 
-        <div class="kpi">
-            <div class="kpi-title">MAPE</div>
-            <div class="kpi-value" id="kpi_mape">-- %</div>
-        </div>
+                        <div class="controls">
+                            <div>
+                                <label>Horizonte</label>
+                                <select id="horizonSelect">
+                                    <option value="1">1 hora</option>
+                                    <option value="6">6 horas</option>
+                                    <option value="12">12 horas</option>
+                                    <option value="24">24 horas</option>
+                                </select>
+                            </div>
 
-        <div class="kpi">
-            <div class="kpi-title">Datos</div>
-            <div class="kpi-value" id="kpi_points">--</div>
-        </div>
+                            <div>
+                                <label>Variable</label>
+                                <select id="variableSelect">
+                                    <option value="energia">Energía (kWh)</option>
+                                    <option value="agua">Agua (Litros)</option>
+                                    <option value="costo">Costo (USD)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="panel">
+                        <div class="kpi-box">
+                            <div class="kpi">
+                                <div class="kpi-title">MAE</div>
+                                <div class="kpi-value" id="kpi_mae">--</div>
+                            </div>
+
+                            <div class="kpi">
+                                <div class="kpi-title">MAPE</div>
+                                <div class="kpi-value" id="kpi_mape">-- %</div>
+                            </div>
+
+                            <div class="kpi">
+                                <div class="kpi-title">Datos</div>
+                                <div class="kpi-value" id="kpi_points">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICO -->
+                    <div class="panel">
+                        <h2 class="section-title">Predicción vs Consumo Real</h2>
+                        <canvas id="chart"></canvas>
+                    </div>
+
+                </section>
+
+                <!-- ================= AHORRO ================= -->
+                <section id="ahorro" class="section">
+                    <h2 class="section-title"><svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor">
+                            <path
+                                d="M480 32c-17.7 0-32 14.3-32 32V87.2c-35-23.7-76.3-43.5-121.7-55.6c-5-1.3-10.1-2.5-15.3-3.6V16c0-8.8-7.2-16-16-16H232c-8.8 0-16 7.2-16 16v13.6c-4.4 1-8.7 2.1-13 3.3C104.5 59.8 29.8 126.3 3.8 221c-4 14.6-1.5 30 6.6 42.4C26.7 288.7 51 304 80 304h352c35.3 0 64-28.7 64-64V64c0-17.7-14.3-32-32-32z" />
+                        </svg> Estimación de Ahorro</h2>
+
+                    <!-- EXPLICACIÓN INTRODUCTORIA -->
+                    <div class="panel" style="margin-bottom: 25px;">
+                        <p style="font-size: 1.1em; line-height: 1.6; color: #e6e6e6; margin: 0;">
+                            Con <strong>SmartHabit AI</strong>, puedes reducir tu facturación de manera inteligente sin
+                            sacrificar el confort en tu hogar.
+                            La siguiente tabla proyecta tu potencial de ahorro si lograras aplicar medidas de eficiencia
+                            recomendadas (por ejemplo, reducir el uso en horas pico o apagar dispositivos en stand-by),
+                            asumiendo una <strong>reducción del 10%</strong> en tu perfil de consumo.
+                        </p>
+                    </div>
+
+                    <div class="kpi-box" id="kpiAhorroBox"></div>
+
+                    <!-- TIPS PARA AHORRAR -->
+                    <div class="panel" style="margin-top: 25px;">
+                        <h3 style="color: #D4AF37; margin-top: 0; margin-bottom: 15px; font-size: 1.2em;">¿Cómo
+                            materializar este ahorro?</h3>
+                        <ul style="color: #ccc; line-height: 1.8; margin: 0; padding-left: 20px;">
+                            <li><strong>Identifica patrones:</strong> Explora la pestaña de <em>Análisis</em> para
+                                descubrir qué días y horas presentan picos de consumo innecesarios.</li>
+                            <li><strong>Actúa a tiempo:</strong> Revisa las <em>Alertas Inteligentes</em> para
+                                reaccionar ante consumos anómalos o excesivos antes de que impacten tu bolsillo.</li>
+                            <li><strong>Optimización predictiva:</strong> Conoce tu consumo futuro con nuestras
+                                <em>Predicciones</em> (hasta 24h) y planifica el uso de electrodomésticos de alto
+                                impacto fuera de los horarios más costosos.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- ================= ANALÍTICA ================= -->
+                <section id="analitica" class="section">
+                    <h2 class="section-title"><svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor">
+                            <path
+                                d="M344 0H488c13.3 0 24 10.7 24 24V168c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-39-39-87 87c-9.4 9.4-24.6 9.4-33.9 0l-55-55-95 95c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l112-112c9.4-9.4 24.6-9.4 33.9 0l55 55 70-70-39-39c-6.9-6.9-8.9-17.2-5.2-26.2S334.3 0 344 0z" />
+                        </svg> Análisis Avanzado</h2>
+
+                    <div class="kpi-advanced-box">
+                        <div class="kpi-advanced">
+                            <div class="kpi-advanced-title">Promedio Energía</div>
+                            <div class="kpi-advanced-value" id="kpi_avg_energy">--</div>
+                        </div>
+
+                        <div class="kpi-advanced">
+                            <div class="kpi-advanced-title">Consumo Máximo</div>
+                            <div class="kpi-advanced-value" id="kpi_peak_day">--</div>
+                        </div>
+
+                        <div class="kpi-advanced">
+                            <div class="kpi-advanced-title">Día Más Costoso</div>
+                            <div class="kpi-advanced-value" id="kpi_expensive_day">--</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="chart-container full-width">
+                            <canvas id="chart_combo"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="chart_top5"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="chart_hourly"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= ALERTAS ================= -->
+                <section id="alertas" class="section">
+                    <h2 class="section-title"><svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor">
+                            <path
+                                d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7.1-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z" />
+                        </svg> Alertas Inteligentes</h2>
+                    <div class="alertas-container">
+                        <div id="alertasLista"></div>
+                    </div>
+                </section>
+
+                <!-- ================= DATOS ================= -->
+                <section id="datos" class="section">
+                    <h2 class="section-title"><svg width="24" height="24" viewBox="0 0 384 512" fill="currentColor">
+                            <path
+                                d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM112 256H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16z" />
+                        </svg> Datos Reales vs Predicción</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Real</th>
+                                    <th>Predicción</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaDatos"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+        </main>
     </div>
 
+    <script src="static/dashboard_multihorizonte.js"></script>
 
-    <!-- ===================================================== -->
-    <!-- ESTIMACIÓN DE AHORRO -->
-    <!-- ===================================================== -->
-    <h2>Estimación de Ahorro</h2>
-    <div class="kpi-box" id="kpiAhorroBox"></div>
+    <!-- ================= NAVEGACIÓN ================= -->
+    <script>
+        function mostrarSeccion(id, btn) {
+            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+            document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
 
-
-    <!-- ===================================================== -->
-    <!-- GRÁFICO PRINCIPAL REAL VS PREDICCIÓN -->
-    <!-- ===================================================== -->
-    <canvas id="chart"></canvas>
-
-
-    <!-- ===================================================== -->
-    <!-- PARTE C — ANÁLISIS AVANZADO DEL CONSUMO -->
-    <!-- ===================================================== -->
-
-    <h2 class="section-title">Análisis Avanzado del Consumo</h2>
-
-    <div class="kpi-advanced-box">
-
-        <div class="kpi-advanced">
-            <div class="kpi-advanced-title">Promedio Energía (kWh/día)</div>
-            <div class="kpi-advanced-value" id="kpi_avg_energy">--</div>
-        </div>
-
-        <div class="kpi-advanced">
-            <div class="kpi-advanced-title">Consumo Máximo Diario</div>
-            <div class="kpi-advanced-value" id="kpi_peak_day">--</div>
-        </div>
-
-        <div class="kpi-advanced">
-            <div class="kpi-advanced-title">Día Más Costoso</div>
-            <div class="kpi-advanced-value" id="kpi_expensive_day">--</div>
-        </div>
-
-    </div>
-
-
-    <!-- ============================= -->
-    <!-- GRÁFICA: ENERGÍA + AGUA + COSTO (7 días) -->
-    <!-- ============================= -->
-    <h3 class="section-title">Energía + Agua + Costo (Últimos 7 días)</h3>
-    <div class="chart-container">
-        <canvas id="chart_combo" class="chart-canvas"></canvas>
-    </div>
-
-
-    <!-- ============================= -->
-    <!-- GRÁFICA: TOP 5 DÍAS MÁS COSTOSOS -->
-    <!-- ============================= -->
-    <h3 class="section-title">Top 5 días más costosos</h3>
-    <div class="chart-container">
-        <canvas id="chart_top5" class="chart-canvas"></canvas>
-    </div>
-
-
-    <!-- ============================= -->
-    <!-- GRÁFICA: DISTRIBUCIÓN PROMEDIO POR HORA -->
-    <!-- ============================= -->
-    <h3 class="section-title">Distribución promedio por hora del día</h3>
-    <div class="chart-container">
-        <canvas id="chart_hourly" class="chart-canvas"></canvas>
-    </div>
-
-
-
-    <!-- ===================================================== -->
-    <!-- TABLA DE DATOS REAL VS PREDICCIÓN -->
-    <!-- ===================================================== -->
-    <h2>Datos reales vs predicciones</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Timestamp objetivo</th>
-                <th>Real</th>
-                <th>Predicción</th>
-                <th>Error</th>
-            </tr>
-        </thead>
-        <tbody id="tablaDatos"></tbody>
-    </table>
-
-</div>
-
-
-<!-- ===================================================== -->
-<!-- JAVASCRIPT -->
-<!-- ===================================================== -->
-<script src="static/dashboard_multihorizonte.js"></script>
+            document.getElementById(id).classList.add("active");
+            btn.classList.add("active");
+        }
+    </script>
 
 </body>
+
 </html>
