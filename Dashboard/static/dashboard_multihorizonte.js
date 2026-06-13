@@ -1,132 +1,135 @@
 let dataset = [];
 let ahorro = null;
 let analitica = null;
+let alertas = null;
 
 let chart = null;
 let chart7d = null;
 let chartTop5 = null;
 let chartHora = null;
 
+const PAGE_TITLES = {
+    predicciones: "Predicciones multihorizonte",
+    ahorro: "Estimación de ahorro",
+    analitica: "Análisis avanzado",
+    alertas: "Alertas inteligentes",
+    datos: "Datos reales vs predicción"
+};
 
-// ======================================================
-// 1) Cargar predicciones del modelo
-// ======================================================
-fetch("static/predicciones_multihorizonte.json")
-    .then(r => r.json())
-    .then(data => {
-        dataset = data;
-        actualizarDashboard();
-    });
+const CHART_DEFAULTS = {
+    color: "#94a3b8",
+    borderColor: "rgba(148, 163, 184, 0.12)",
+    font: { family: "'Inter', sans-serif", size: 11 }
+};
 
+Chart.defaults.color = CHART_DEFAULTS.color;
+Chart.defaults.borderColor = CHART_DEFAULTS.borderColor;
+Chart.defaults.font = CHART_DEFAULTS.font;
 
-// ======================================================
-// 2) Cargar estimación de ahorro
-// ======================================================
-fetch("static/estimacion_ahorro.json")
-    .then(r => r.json())
-    .then(data => {
-        ahorro = data;
-        mostrarAhorro();
-    });
-
-
-// ======================================================
-// 3) Cargar analítica avanzada
-// ======================================================
-fetch("static/analitica_consumo.json")
-    .then(r => r.json())
-    .then(data => {
-        analitica = data;
-        mostrarAnalitica();
-    });
-
-let alertas_data = null;
-
-// ======================================================
-// 4) Cargar alertas
-// ======================================================
-fetch("static/alertas_multihorizonte.json")
-    .then(r => r.json())
-    .then(data => {
-        alertas_data = data;
-        mostrarAlertas();
-    });
-
-function mostrarAlertas() {
-    const container = document.getElementById("alertasLista");
-    if (!container) return;
-    container.innerHTML = "";
-
-    if (!alertas_data || !alertas_data.alertas || alertas_data.alertas.length === 0) {
-        container.innerHTML = "<p style='padding:20px; text-align:center; color:#e6e6e6; font-size: 1.1em;'>No hay alertas activas en este momento.</p>";
-        return;
-    }
-
-    alertas_data.alertas.forEach(a => {
-        let borderColor = "#D4AF37"; // gold
-        let icon = '<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7.1-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>';
-
-        if (a.severidad === "alta") {
-            borderColor = "#d32f2f"; // red
-            icon = '<svg width="16" height="16" viewBox="0 0 448 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M224 0c-17.7 0-32 14.3-32 32V51.2C119 66 64 130.6 64 208v18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416H416c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>';
-        } else if (a.severidad === "moderada") {
-            borderColor = "#f57c00"; // orange
-            icon = '<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7.1-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>';
-        } else {
-            borderColor = "#0288d1"; // blue
-            icon = '<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="display:inline-block;vertical-align:-0.125em"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>';
-        }
-
-        container.innerHTML += `
-            <div style="background: rgba(255,255,255,0.04); border-radius: 8px; border-left: 5px solid ${borderColor}; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
-                <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px; color: ${borderColor};">${icon} ${a.mensaje}</div>
-                <div style="font-size: 0.9em; margin-bottom: 8px;">
-                    <strong>Variable:</strong> <span style="text-transform: capitalize;">${a.variable}</span> | 
-                    <strong>Severidad:</strong> <span style="text-transform: capitalize;">${a.severidad}</span>
-                </div>
-                <div style="font-size: 0.9em; color: #ccc;"><em>Recomendación:</em> ${a.recomendacion}</div>
-                <div style="font-size: 0.8em; color: #888; margin-top: 10px; text-align: right;">Reportado el: ${a.timestamp}</div>
-            </div>
-        `;
-    });
+function chartOptions(extra = {}) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+            legend: {
+                labels: {
+                    color: "#cbd5e1",
+                    usePointStyle: true,
+                    padding: 16,
+                    font: { size: 12, weight: "500" }
+                }
+            },
+            tooltip: {
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
+                titleColor: "#f1f5f9",
+                bodyColor: "#cbd5e1",
+                borderColor: "rgba(16, 185, 129, 0.3)",
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            x: {
+                grid: { color: "rgba(148, 163, 184, 0.06)" },
+                ticks: { maxTicksLimit: 8, color: "#64748b" }
+            },
+            y: {
+                grid: { color: "rgba(148, 163, 184, 0.06)" },
+                ticks: { color: "#64748b" }
+            }
+        },
+        ...extra
+    };
 }
 
-// ===================================================================
-// A) MOSTRAR AHORRO
-// ===================================================================
+function gradientFill(ctx, colorStart, colorEnd) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    return gradient;
+}
+
+// Navigation
+document.querySelectorAll(".nav-item").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const id = btn.dataset.section;
+        document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+        document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        btn.classList.add("active");
+        document.getElementById("pageTitle").textContent = PAGE_TITLES[id] || id;
+    });
+});
+
+// Load data
+Promise.all([
+    fetch("static/predicciones_multihorizonte.json").then(r => r.json()),
+    fetch("static/estimacion_ahorro.json").then(r => r.json()),
+    fetch("static/analitica_consumo.json").then(r => r.json()),
+    fetch("static/alertas_multihorizonte.json").then(r => r.json())
+]).then(([pred, ahorroData, analiticaData, alertasData]) => {
+    dataset = pred;
+    ahorro = ahorroData;
+    analitica = analiticaData;
+    alertas = alertasData;
+    actualizarDashboard();
+    mostrarAhorro();
+    mostrarAnalitica();
+    mostrarAlertas();
+}).catch(err => console.error("Error cargando datos:", err));
+
 function mostrarAhorro() {
     if (!ahorro) return;
 
     const box = document.getElementById("kpiAhorroBox");
-    if (!box) return;
     box.innerHTML = "";
 
     box.innerHTML += `
-        <div class="kpi">
-            <div class="kpi-title">Ahorro Real (10%)</div>
-            <div class="kpi-value">$${ahorro.ahorro_actual_posible.ahorro_10pct_usd}</div>
+        <div class="kpi kpi--savings kpi--savings-highlight">
+            <div class="kpi-icon">✨</div>
+            <div class="kpi-title">Ahorro real (10%)</div>
+            <div class="kpi-value">$${ahorro.ahorro_actual_posible.ahorro_10pct_usd.toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+            <div class="kpi-sub">Sobre consumo histórico total</div>
         </div>
     `;
 
     ahorro.ahorro_predicho_futuro.forEach(a => {
         box.innerHTML += `
-            <div class="kpi">
-                <div class="kpi-title">Ahorro Futuro ${a.horizonte_horas}h</div>
-                <div class="kpi-value">$${a.ahorro_10pct_usd}</div>
+            <div class="kpi kpi--savings">
+                <div class="kpi-icon">⏱</div>
+                <div class="kpi-title">Ahorro futuro ${a.horizonte_horas}h</div>
+                <div class="kpi-value">$${a.ahorro_10pct_usd.toFixed(2)}</div>
+                <div class="kpi-sub">Escenario 10% · Costo est. $${a.costo_estimado_usd.toFixed(2)}</div>
             </div>
         `;
     });
 }
 
-
-
-// ===================================================================
-// B) MOSTRAR KPIs + GRAFICAS AVANZADAS
-// ===================================================================
 function mostrarAnalitica() {
     if (!analitica) return;
 
-    // KPIs avanzados
     document.getElementById("kpi_avg_energy").innerText =
         analitica.kpis.promedio_energia_diaria.toFixed(2) + " kWh";
 
@@ -136,22 +139,42 @@ function mostrarAnalitica() {
     document.getElementById("kpi_expensive_day").innerText =
         analitica.kpis.dia_mas_costoso;
 
-
-    // GRÁFICAS
     graficarUltimos7Dias();
     graficarTop5();
     graficarPromedioPorHora();
 }
 
+function mostrarAlertas() {
+    if (!alertas) return;
 
+    const resumen = document.getElementById("alertasResumen");
+    const lista = document.getElementById("alertasLista");
 
-// ===================================================================
-// C) GRÁFICA — Últimos 7 días
-// ===================================================================
+    resumen.textContent = `${alertas.total_alertas} alertas detectadas · Presupuesto mensual $${alertas.presupuesto_mensual_usd}`;
+
+    const icons = { energia: "⚡", agua: "💧", costo: "💵" };
+
+    lista.innerHTML = alertas.alertas.map(a => `
+        <div class="alerta-card alerta-card--${a.severidad}">
+            <div class="alerta-icon">${icons[a.variable] || "🔔"}</div>
+            <div class="alerta-body">
+                <h4>${a.mensaje}</h4>
+                <p>${a.recomendacion}</p>
+            </div>
+            <div class="alerta-meta">
+                <span class="alerta-severidad alerta-severidad--${a.severidad}">${a.severidad}</span>
+                <div>${a.valor} ${a.unidad}</div>
+                <div>+${a.porcentaje_sobre_umbral.toFixed(1)}% umbral</div>
+            </div>
+        </div>
+    `).join("");
+}
+
 function graficarUltimos7Dias() {
     const ctx = document.getElementById("chart_combo");
-
     if (chart7d) chart7d.destroy();
+
+    const g = ctx.getContext("2d");
 
     chart7d = new Chart(ctx, {
         type: "line",
@@ -161,65 +184,60 @@ function graficarUltimos7Dias() {
                 {
                     label: "Energía (kWh)",
                     data: analitica.ultimos_7_dias.energia,
-                    borderColor: "#1976d2",
-                    tension: 0.3
+                    borderColor: "#34d399",
+                    backgroundColor: gradientFill(g, "rgba(52, 211, 153, 0.2)", "rgba(52, 211, 153, 0)"),
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3
                 },
                 {
                     label: "Agua (L)",
                     data: analitica.ultimos_7_dias.agua,
-                    borderColor: "#2e7d32",
-                    tension: 0.3
+                    borderColor: "#22d3ee",
+                    tension: 0.4,
+                    pointRadius: 3
                 },
                 {
                     label: "Costo (USD)",
                     data: analitica.ultimos_7_dias.costo,
-                    borderColor: "#f57c00",
-                    tension: 0.3
+                    borderColor: "#fbbf24",
+                    tension: 0.4,
+                    pointRadius: 3
                 }
             ]
         },
-        options: {
-            maintainAspectRatio: false
-        }
+        options: chartOptions()
     });
 }
 
-
-
-// ===================================================================
-// D) GRÁFICA — Top 5 días costosos
-// ===================================================================
 function graficarTop5() {
     const ctx = document.getElementById("chart_top5");
-
     if (chartTop5) chartTop5.destroy();
 
     chartTop5 = new Chart(ctx, {
         type: "bar",
         data: {
             labels: analitica.top5_costosos.fechas,
-            datasets: [
-                {
-                    label: "Costo (USD)",
-                    data: analitica.top5_costosos.costos,
-                    backgroundColor: "#d32f2f"
-                }
-            ]
+            datasets: [{
+                label: "Costo (USD)",
+                data: analitica.top5_costosos.costos,
+                backgroundColor: [
+                    "rgba(251, 113, 133, 0.85)",
+                    "rgba(251, 113, 133, 0.7)",
+                    "rgba(251, 113, 133, 0.55)",
+                    "rgba(251, 113, 133, 0.4)",
+                    "rgba(251, 113, 133, 0.28)"
+                ],
+                borderRadius: 8,
+                borderSkipped: false
+            }]
         },
-        options: {
-            maintainAspectRatio: false
-        }
+        options: chartOptions({ plugins: { legend: { display: false } } })
     });
 }
 
-
-
-// ===================================================================
-// E) GRÁFICA — Promedio por hora del día
-// ===================================================================
 function graficarPromedioPorHora() {
     const ctx = document.getElementById("chart_hourly");
-
     if (chartHora) chartHora.destroy();
 
     chartHora = new Chart(ctx, {
@@ -230,115 +248,114 @@ function graficarPromedioPorHora() {
                 {
                     label: "Energía (kWh)",
                     data: analitica.promedio_hora.energia,
-                    borderColor: "#0288d1",
-                    tension: 0.2
+                    borderColor: "#34d399",
+                    tension: 0.3,
+                    pointRadius: 0
                 },
                 {
                     label: "Agua (L)",
                     data: analitica.promedio_hora.agua,
-                    borderColor: "#43a047",
-                    tension: 0.2
+                    borderColor: "#22d3ee",
+                    tension: 0.3,
+                    pointRadius: 0
                 },
                 {
                     label: "Costo (USD)",
                     data: analitica.promedio_hora.costo,
-                    borderColor: "#ef6c00",
-                    tension: 0.2
+                    borderColor: "#fbbf24",
+                    tension: 0.3,
+                    pointRadius: 0
                 }
             ]
         },
-        options: {
-            maintainAspectRatio: false
-        }
+        options: chartOptions()
     });
 }
 
-
-
-// ===================================================================
-// F) DASHBOARD ORIGINAL — Predicciones Multihorizonte
-// ===================================================================
 document.getElementById("horizonSelect").onchange = actualizarDashboard;
 document.getElementById("variableSelect").onchange = actualizarDashboard;
 
-
 function actualizarDashboard() {
+    if (!dataset.length) return;
+
     const h = parseInt(document.getElementById("horizonSelect").value);
     const v = document.getElementById("variableSelect").value;
-
     const datos = dataset.filter(d => d.horizon === h);
 
     let realKey, predKey, unidad;
 
     if (v === "energia") { realKey = "energia_real_kwh"; predKey = "energia_pred_kwh"; unidad = "kWh"; }
-    else if (v === "agua") { realKey = "agua_real_l"; predKey = "agua_pred_l"; unidad = "Litros"; }
+    else if (v === "agua") { realKey = "agua_real_l"; predKey = "agua_pred_l"; unidad = "L"; }
     else { realKey = "costo_real_usd"; predKey = "costo_pred_usd"; unidad = "USD"; }
 
-    // ============================
-    // Cálculo métricas
-    // ============================
     const errores = datos.map(d => Math.abs(d[realKey] - d[predKey]));
     const mae = errores.reduce((a, b) => a + b, 0) / errores.length;
 
-    // El MAPE (Mean Absolute Percentage Error) explota cuando el valor real es casi 0 (muy normal en el agua).
-    // Filtramos los valores cercanos a 0 para que no distorsionen astronómicamente el porcentaje.
-    let valid_mape_count = 0;
-    const mape_sum = datos.reduce((acc, d) => {
-        const real = Math.abs(d[realKey]);
-        const pred = d[predKey];
-
-        // Solo calculamos MAPE si el consumo real es mayor a 0.05 (para evitar divisiones entre cuasi cero)
-        if (real > 0.05) {
-            valid_mape_count++;
-            return acc + Math.abs((real - pred) / real);
-        } else if (pred > 0.1) {
-            // Si el real es cero pero predijo bastante, es 100% de error para esa medida
-            valid_mape_count++;
-            return acc + 1.0;
-        }
-        return acc;
-    }, 0);
-
-    const mape = valid_mape_count > 0 ? (mape_sum / valid_mape_count) * 100 : 0;
+    const mape = datos.reduce((acc, d) =>
+        acc + Math.abs((d[realKey] - d[predKey]) / (Math.abs(d[realKey]) + 1e-8)),
+    0) / datos.length * 100;
 
     document.getElementById("kpi_mae").innerText = mae.toFixed(4) + " " + unidad;
-    document.getElementById("kpi_mape").innerText = mape.toFixed(2) + " %";
-    document.getElementById("kpi_points").innerText = datos.length;
+    document.getElementById("kpi_mape").innerText = mape.toFixed(2) + "%";
+    document.getElementById("kpi_points").innerText = datos.length.toLocaleString();
+    document.getElementById("hero_mape").innerText = mape.toFixed(1) + "%";
 
-    // ============================
-    // TABLA
-    // ============================
     const tbody = document.getElementById("tablaDatos");
-    tbody.innerHTML = "";
+    tbody.innerHTML = datos.slice(0, 200).map(d => `
+        <tr>
+            <td>${d.timestamp_objetivo}</td>
+            <td>${d[realKey].toFixed(3)} ${unidad}</td>
+            <td>${d[predKey].toFixed(3)} ${unidad}</td>
+            <td>${Math.abs(d[realKey] - d[predKey]).toFixed(3)} ${unidad}</td>
+        </tr>
+    `).join("");
 
-    datos.slice(0, 200).forEach(d => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${d.timestamp_objetivo}</td>
-                <td>${d[realKey].toFixed(3)} ${unidad}</td>
-                <td>${d[predKey].toFixed(3)} ${unidad}</td>
-                <td>${Math.abs(d[realKey] - d[predKey]).toFixed(3)} ${unidad}</td>
-            </tr>`;
-    });
-
-    // ============================
-    // GRÁFICO PRINCIPAL
-    // ============================
-    const labels = datos.map(d => d.timestamp_objetivo);
+    const labels = datos.map(d => d.timestamp_objetivo.slice(0, 16));
     const reales = datos.map(d => d[realKey]);
     const preds = datos.map(d => d[predKey]);
 
     if (chart) chart.destroy();
 
-    chart = new Chart(document.getElementById("chart"), {
+    const ctx = document.getElementById("chart");
+    const g = ctx.getContext("2d");
+
+    chart = new Chart(ctx, {
         type: "line",
         data: {
             labels,
             datasets: [
-                { label: "Real", data: reales, borderColor: "#2e7d32", tension: 0.2 },
-                { label: "Predicción", data: preds, borderColor: "#1565c0", tension: 0.2 }
+                {
+                    label: "Consumo real",
+                    data: reales,
+                    borderColor: "#34d399",
+                    backgroundColor: gradientFill(g, "rgba(52, 211, 153, 0.18)", "rgba(52, 211, 153, 0)"),
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 0,
+                    borderWidth: 2
+                },
+                {
+                    label: "Predicción IA",
+                    data: preds,
+                    borderColor: "#22d3ee",
+                    borderDash: [6, 4],
+                    tension: 0.35,
+                    pointRadius: 0,
+                    borderWidth: 2
+                }
             ]
-        }
+        },
+        options: chartOptions({
+            scales: {
+                x: {
+                    grid: { color: "rgba(148, 163, 184, 0.06)" },
+                    ticks: { maxTicksLimit: 10, color: "#64748b", maxRotation: 0 }
+                },
+                y: {
+                    grid: { color: "rgba(148, 163, 184, 0.06)" },
+                    ticks: { color: "#64748b" }
+                }
+            }
+        })
     });
 }
-
