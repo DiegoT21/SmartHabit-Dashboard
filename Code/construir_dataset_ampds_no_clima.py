@@ -6,8 +6,16 @@ from pathlib import Path
 # ============================
 # CONFIGURACIÓN
 # ============================
-BASE = r"C:\Users\diego\.cache\kagglehub\datasets\programmerrdai\ampds-the-almanac-of-minutely-power-dataset\versions\1"
-OUTPUT = r"C:\Users\diego\Desktop\Proyecto SamSung Final\Data Set\dataset_consumo_total_1y.csv"
+# BASE: carpeta local donde kagglehub descargó el dataset AMPds
+# (dataset: programmerrdai/ampds-the-almanac-of-minutely-power-dataset).
+# Se puede sobreescribir con la variable de entorno AMPDS_DIR.
+BASE_DIR = Path(__file__).resolve().parent.parent
+BASE = os.environ.get(
+    "AMPDS_DIR",
+    str(Path.home() / ".cache" / "kagglehub" / "datasets" /
+        "programmerrdai" / "ampds-the-almanac-of-minutely-power-dataset" / "versions" / "1"),
+)
+OUTPUT = str(BASE_DIR / "Data Set" / "dataset_consumo_total_1y.csv")
 
 # Tarifas por defecto
 TARIFA_KWH_DEF = 0.16        # USD/kWh (tarifa residencial típica)

@@ -1,12 +1,17 @@
 import os
+import sys
 import json
 import pandas as pd
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ============================
 # ARCHIVOS DE ENTRADA / SALIDA
 # ============================
-DATASET = r"C:\Users\diego\Desktop\Proyecto SamSung Final\Data Set\dataset_consumo_total_1y.csv"
-OUT_FILE = r"C:\Users\diego\Desktop\Proyecto SamSung Final\Dashboard\static\analitica_consumo.json"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATASET = os.path.join(BASE_DIR, "Data Set", "dataset_consumo_total_1y.csv")
+OUT_FILE = os.path.join(BASE_DIR, "Dashboard", "static", "analitica_consumo.json")
 
 
 # ============================

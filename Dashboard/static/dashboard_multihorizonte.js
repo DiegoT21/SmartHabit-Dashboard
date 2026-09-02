@@ -103,15 +103,56 @@ Promise.all([
 function mostrarAhorro() {
     if (!ahorro) return;
 
-    const box = document.getElementById("kpiAhorroBox");
-    box.innerHTML = "";
+    const habito = ahorro.habito;
+    const detectado = ahorro.ahorro_detectado;
+    const scoreColor = habito.eco_score >= 80 ? "#34d399" : habito.eco_score >= 60 ? "#fbbf24" : "#fb7185";
 
-    box.innerHTML += `
+    const habitoBox = document.getElementById("habitoBox");
+    habitoBox.innerHTML = `
+        <div class="eco-score-card">
+            <div class="eco-score-ring" style="background: conic-gradient(${scoreColor} ${habito.eco_score * 3.6}deg, rgba(148,163,184,0.15) 0deg)">
+                <div class="eco-score-inner">
+                    <span class="eco-score-value">${habito.eco_score}</span>
+                    <span class="eco-score-max">/100</span>
+                </div>
+            </div>
+            <div class="eco-score-info">
+                <div class="eco-score-label">EcoScore de hábitos</div>
+                <div class="eco-score-tag" style="color:${scoreColor}">${habito.clasificacion}</div>
+                <div class="eco-score-breakdown">
+                    <span>🔴 ${habito.n_alertas_criticas} críticas</span>
+                    <span>🟡 ${habito.n_alertas_moderadas} moderadas</span>
+                    <span>🔵 ${habito.n_alertas_leves} leves</span>
+                </div>
+            </div>
+        </div>
         <div class="kpi kpi--savings kpi--savings-highlight">
             <div class="kpi-icon">✨</div>
-            <div class="kpi-title">Ahorro real (10%)</div>
-            <div class="kpi-value">$${ahorro.ahorro_actual_posible.ahorro_10pct_usd.toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
-            <div class="kpi-sub">Sobre consumo histórico total</div>
+            <div class="kpi-title">Ahorro detectado por IA</div>
+            <div class="kpi-value">$${detectado.proyeccion_mensual_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span class="kpi-value-unit">/mes</span></div>
+            <div class="kpi-sub">${detectado.descripcion}</div>
+        </div>
+        <div class="kpi kpi--savings">
+            <div class="kpi-icon">⚡</div>
+            <div class="kpi-title">Picos de consumo</div>
+            <div class="kpi-value">$${detectado.picos_usd_periodo.toFixed(2)}</div>
+            <div class="kpi-sub">Sobrecosto detectado en el período evaluado</div>
+        </div>
+        <div class="kpi kpi--savings">
+            <div class="kpi-icon">💧</div>
+            <div class="kpi-title">Fugas nocturnas</div>
+            <div class="kpi-value">$${detectado.fugas_usd_periodo.toFixed(2)}</div>
+            <div class="kpi-sub">Agua desperdiciada fuera de horario habitual</div>
+        </div>
+    `;
+
+    const box = document.getElementById("kpiAhorroBox");
+    box.innerHTML = `
+        <div class="kpi kpi--savings">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-title">Escenario 10% de ahorro</div>
+            <div class="kpi-value">$${ahorro.escenarios_ilustrativos.ahorro_10pct_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div class="kpi-sub">Si reduces 10% el consumo histórico total</div>
         </div>
     `;
 

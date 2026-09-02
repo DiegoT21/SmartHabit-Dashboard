@@ -13,6 +13,7 @@ Autor: Bro (Proyecto Samsung Final)
 """
 
 import os
+import sys
 import json
 import math
 import uuid
@@ -22,18 +23,21 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 
 # =========================
 # 1) CONFIGURACIÓN
 # =========================
-BASE_DIR = r"C:\Users\diego\Desktop\Proyecto SamSung Final"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "Data Set")
 PRED_DIR = os.path.join(BASE_DIR, "Pred_vs_Real")
+STATIC_DIR = os.path.join(BASE_DIR, "Dashboard", "static")
 
 DATASET_CSV = os.path.join(DATA_DIR, "dataset_consumo_total_1y.csv")
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-PRED_JSON = os.path.join(BASE_DIR, "Dashboard", "static", "predicciones_multihorizonte.json")
-OUT_ALERTAS_JSON = os.path.join(PRED_DIR, "alertas_multihorizonte.json")
+PRED_JSON = os.path.join(STATIC_DIR, "predicciones_multihorizonte.json")
+OUT_ALERTAS_JSON = os.path.join(STATIC_DIR, "alertas_multihorizonte.json")
 
 # Presupuesto mensual (puedes ajustarlo en USD)
 PRESUPUESTO_MENSUAL_USD = 120.0
@@ -136,15 +140,22 @@ def _normalizar_registro(r: Dict, horizonte: str) -> Dict:
     """
     Intenta mapear diferentes nombres de campos a uno estándar.
     """
-    ts = r.get("timestamp") or r.get("ts") or r.get("time")
+    ts = (r.get("timestamp") or r.get("timestamp_objetivo")
+          or r.get("ts") or r.get("time"))
     # Predicciones
-    p_e = r.get("pred_energia") or r.get("pred_energia_kwh") or r.get("energia_pred") or r.get("energy_pred")
-    p_a = r.get("pred_agua") or r.get("pred_agua_litros") or r.get("agua_pred") or r.get("water_pred")
-    p_c = r.get("pred_costo") or r.get("pred_costo_total_usd") or r.get("costo_pred") or r.get("cost_pred")
+    p_e = (r.get("energia_pred_kwh") or r.get("pred_energia") or
+           r.get("pred_energia_kwh") or r.get("energia_pred") or r.get("energy_pred"))
+    p_a = (r.get("agua_pred_l") or r.get("pred_agua") or
+           r.get("pred_agua_litros") or r.get("agua_pred") or r.get("water_pred"))
+    p_c = (r.get("costo_pred_usd") or r.get("pred_costo") or
+           r.get("pred_costo_total_usd") or r.get("costo_pred") or r.get("cost_pred"))
     # Reales (si existen)
-    r_e = r.get("real_energia") or r.get("real_energia_kwh") or r.get("energia_real") or r.get("energy_real")
-    r_a = r.get("real_agua") or r.get("real_agua_litros") or r.get("agua_real") or r.get("water_real")
-    r_c = r.get("real_costo") or r.get("real_costo_total_usd") or r.get("costo_real") or r.get("cost_real")
+    r_e = (r.get("energia_real_kwh") or r.get("real_energia") or
+           r.get("real_energia_kwh") or r.get("energia_real") or r.get("energy_real"))
+    r_a = (r.get("agua_real_l") or r.get("real_agua") or
+           r.get("real_agua_litros") or r.get("agua_real") or r.get("water_real"))
+    r_c = (r.get("costo_real_usd") or r.get("real_costo") or
+           r.get("real_costo_total_usd") or r.get("costo_real") or r.get("cost_real"))
 
     return {
         "timestamp": _safe_dt(ts),
@@ -334,7 +345,7 @@ def generar_alertas(df_base: pd.DataFrame, df_pred: pd.DataFrame) -> List[Dict]:
             })
 
     # 5.4 Tendencia alcista (media móvil 7 días) usando DATASET BASE (reales)
-    df_d = df_base[["timestamp", "energia_kwh", "agua_litros", "costo_total_usd"]].copy().set_index("timestamp").resample("1H").sum()
+    df_d = df_base[["timestamp", "energia_kwh", "agua_litros", "costo_total_usd"]].copy().set_index("timestamp").resample("1h").sum()
     for var, unidad in [("energia_kwh", "kWh"), ("agua_litros", "L"), ("costo_total_usd", "USD")]:
         s = df_d[var].dropna()
         if len(s) < 24 * (CFG["trend_window_days"] + 1):
@@ -378,7 +389,7 @@ def _recomendacion_var(var: str) -> str:
 # 6) MAIN
 # =========================
 def main():
-    os.makedirs(PRED_DIR, exist_ok=True)
+    os.makedirs(STATIC_DIR, exist_ok=True)
 
     print("Cargando dataset base…")
     df_base = cargar_dataset_base(DATASET_CSV)
