@@ -3,17 +3,19 @@
 ====================================== */
 
 :root {
-    --bg-base: #070b14;
-    --bg-elevated: #0d1320;
-    --bg-card: rgba(15, 23, 42, 0.72);
+    /* Paleta de marca Samsung: azul Samsung como acento primario */
+    --bg-base: #070912;
+    --bg-elevated: #0c1020;
+    --bg-card: rgba(13, 17, 34, 0.72);
     --border: rgba(148, 163, 184, 0.12);
-    --border-accent: rgba(16, 185, 129, 0.35);
+    --border-accent: rgba(76, 110, 245, 0.4);
     --text: #e2e8f0;
     --text-muted: #94a3b8;
-    --accent: #10b981;
-    --accent-light: #34d399;
-    --accent-glow: rgba(16, 185, 129, 0.25);
-    --cyan: #22d3ee;
+    --samsung-blue: #1428a0;
+    --accent: #1428a0;
+    --accent-light: #4c6ef5;
+    --accent-glow: rgba(76, 110, 245, 0.28);
+    --cyan: #38bdf8;
     --amber: #fbbf24;
     --rose: #fb7185;
     --sidebar-w: 260px;
@@ -23,6 +25,38 @@
     --font-display: "Outfit", sans-serif;
     --font-body: "Inter", sans-serif;
 }
+
+.icon-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.dot--critica { background: var(--rose); }
+.dot--moderada { background: var(--amber); }
+.dot--leve { background: var(--cyan); }
 
 * {
     box-sizing: border-box;
@@ -52,7 +86,7 @@ html, body {
     height: 500px;
     top: -120px;
     right: 10%;
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(76, 110, 245, 0.12);
 }
 
 .bg-glow--2 {
@@ -60,7 +94,7 @@ html, body {
     height: 400px;
     bottom: -80px;
     left: 30%;
-    background: rgba(34, 211, 238, 0.08);
+    background: rgba(56, 189, 248, 0.08);
 }
 
 .layout {
@@ -92,8 +126,8 @@ html, body {
     width: 48px;
     height: 48px;
     margin: 0 auto 14px;
-    color: var(--accent);
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 211, 238, 0.08));
+    color: #fff;
+    background: linear-gradient(135deg, var(--samsung-blue), #0c1c74);
     border: 1px solid var(--border-accent);
     border-radius: 14px;
     display: grid;
@@ -123,7 +157,7 @@ html, body {
     font-family: var(--font-display);
     font-size: 18px;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--accent-light);
     margin-top: -2px;
 }
 
@@ -160,9 +194,15 @@ html, body {
 }
 
 .nav-icon {
-    font-size: 16px;
     width: 22px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon .icon {
+    width: 18px;
+    height: 18px;
 }
 
 .nav-label {
@@ -177,10 +217,10 @@ html, body {
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(34, 211, 238, 0.06));
+    background: linear-gradient(135deg, rgba(76, 110, 245, 0.14), rgba(56, 189, 248, 0.06));
     color: var(--accent-light);
     border-color: var(--border-accent);
-    box-shadow: inset 3px 0 0 var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent-light);
 }
 
 .sidebar-footer {
@@ -203,9 +243,9 @@ html, body {
     text-transform: uppercase;
     padding: 4px 8px;
     border-radius: 6px;
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(76, 110, 245, 0.1);
     color: var(--accent-light);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(76, 110, 245, 0.2);
 }
 
 .sidebar-credit {
@@ -240,7 +280,7 @@ html, body {
     margin: 0 0 4px;
     font-size: 12px;
     font-weight: 500;
-    color: var(--accent);
+    color: var(--accent-light);
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
@@ -261,16 +301,16 @@ html, body {
     color: var(--text-muted);
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(76, 110, 245, 0.08);
+    border: 1px solid rgba(76, 110, 245, 0.2);
 }
 
 .status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 10px var(--accent);
+    background: var(--accent-light);
+    box-shadow: 0 0 10px var(--accent-light);
     animation: pulse 2s ease infinite;
 }
 
@@ -349,7 +389,7 @@ html, body {
 
 .hero-card--accent {
     border-color: var(--border-accent);
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.8));
+    background: linear-gradient(135deg, rgba(76, 110, 245, 0.1), rgba(15, 23, 42, 0.8));
 }
 
 .hero-label {
@@ -452,7 +492,7 @@ select {
 
 select:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--accent-light);
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
@@ -481,8 +521,13 @@ select:focus {
 }
 
 .kpi-icon {
-    font-size: 22px;
     margin-bottom: 8px;
+    color: var(--accent-light);
+}
+
+.kpi-icon .icon {
+    width: 22px;
+    height: 22px;
 }
 
 .kpi-title {
@@ -513,6 +558,10 @@ select:focus {
 }
 
 .kpi--savings .kpi-value {
+    color: var(--amber);
+}
+
+.kpi--savings .kpi-icon {
     color: var(--amber);
 }
 
@@ -721,8 +770,13 @@ select:focus {
     border-radius: 10px;
     display: grid;
     place-items: center;
-    font-size: 18px;
+    color: var(--accent-light);
     background: rgba(255, 255, 255, 0.04);
+}
+
+.alerta-icon .icon {
+    width: 19px;
+    height: 19px;
 }
 
 .alerta-body h4 {
@@ -756,7 +810,7 @@ select:focus {
 }
 
 .alerta-severidad--moderada { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
-.alerta-severidad--leve { background: rgba(34, 211, 238, 0.12); color: var(--cyan); }
+.alerta-severidad--leve { background: rgba(56, 189, 248, 0.12); color: var(--cyan); }
 .alerta-severidad--alta,
 .alerta-severidad--critica { background: rgba(251, 113, 133, 0.15); color: var(--rose); }
 
@@ -798,7 +852,7 @@ td {
 }
 
 tbody tr:hover {
-    background: rgba(16, 185, 129, 0.04);
+    background: rgba(76, 110, 245, 0.04);
 }
 
 tbody tr:last-child td {
