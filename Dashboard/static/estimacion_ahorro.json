@@ -1,24 +1,24 @@
 {
-  "generado_en": "2026-09-02T00:43:05.496196",
+  "generado_en": "2026-09-02T01:00:11.945443",
   "tarifas_implicitas": {
     "usd_por_kwh": 0.16,
     "usd_por_litro": 0.0015
   },
   "habito": {
-    "eco_score": 63,
-    "clasificacion": "Buena",
-    "n_alertas_criticas": 482,
-    "n_alertas_moderadas": 261,
-    "n_alertas_leves": 499,
-    "total_alertas": 1242
+    "eco_score": 97,
+    "clasificacion": "Excelente",
+    "n_alertas_criticas": 22,
+    "n_alertas_moderadas": 20,
+    "n_alertas_leves": 108,
+    "total_alertas": 150
   },
   "ahorro_detectado": {
-    "descripcion": "Ahorro estimado a partir de 1242 alertas detectadas por la IA (picos de consumo y posibles fugas) en 145 días evaluados.",
-    "picos_usd_periodo": 7.7984,
-    "fugas_usd_periodo": 15.4308,
-    "total_usd_periodo": 23.2293,
+    "descripcion": "Ahorro estimado a partir de 150 alertas detectadas por la IA (picos de consumo y posibles fugas) en 145 días evaluados.",
+    "picos_usd_periodo": 2.4395,
+    "fugas_usd_periodo": 0.6135,
+    "total_usd_periodo": 3.053,
     "dias_evaluados": 145,
-    "proyeccion_mensual_usd": 4.81,
+    "proyeccion_mensual_usd": 0.63,
     "n_tendencias_alcistas": 9,
     "n_alertas_presupuesto": 20
   },
@@ -31,31 +31,31 @@
   "ahorro_predicho_futuro": [
     {
       "horizonte_horas": 1,
-      "costo_estimado_usd": 1505.4402,
-      "ahorro_10pct_usd": 150.544,
-      "ahorro_20pct_usd": 301.088,
-      "ahorro_30pct_usd": 451.6321
+      "costo_estimado_usd": 1481.3974,
+      "ahorro_10pct_usd": 148.1397,
+      "ahorro_20pct_usd": 296.2795,
+      "ahorro_30pct_usd": 444.4192
     },
     {
       "horizonte_horas": 6,
-      "costo_estimado_usd": 1515.0755,
-      "ahorro_10pct_usd": 151.5075,
-      "ahorro_20pct_usd": 303.0151,
-      "ahorro_30pct_usd": 454.5226
+      "costo_estimado_usd": 1471.4952,
+      "ahorro_10pct_usd": 147.1495,
+      "ahorro_20pct_usd": 294.299,
+      "ahorro_30pct_usd": 441.4485
     },
     {
       "horizonte_horas": 12,
-      "costo_estimado_usd": 1533.3476,
-      "ahorro_10pct_usd": 153.3348,
-      "ahorro_20pct_usd": 306.6695,
-      "ahorro_30pct_usd": 460.0043
+      "costo_estimado_usd": 1419.2751,
+      "ahorro_10pct_usd": 141.9275,
+      "ahorro_20pct_usd": 283.855,
+      "ahorro_30pct_usd": 425.7825
     },
     {
       "horizonte_horas": 24,
-      "costo_estimado_usd": 1481.3017,
-      "ahorro_10pct_usd": 148.1302,
-      "ahorro_20pct_usd": 296.2603,
-      "ahorro_30pct_usd": 444.3905
+      "costo_estimado_usd": 1586.7546,
+      "ahorro_10pct_usd": 158.6755,
+      "ahorro_20pct_usd": 317.3509,
+      "ahorro_30pct_usd": 476.0264
     }
   ]
 }

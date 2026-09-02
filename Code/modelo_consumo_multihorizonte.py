@@ -123,6 +123,13 @@ def main(args):
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df = df.sort_values("timestamp").reset_index(drop=True)
 
+    # agua_litros es muy asimetrica (~30% de horas en 0, cola larga hasta
+    # ~770 L). Entrenando en escala cruda, el MSE queda dominado por los
+    # pocos picos enormes y el modelo aprende a "aplanar" sus predicciones
+    # (nunca predice 0, subestima los picos). log1p comprime esa cola para
+    # que el error se reparta proporcionalmente en vez de en litros crudos.
+    df["agua_litros"] = np.log1p(df["agua_litros"])
+
     # -----------------------------
     # 2) Definir columnas (Opción 2)
     # -----------------------------
@@ -221,6 +228,14 @@ def main(args):
         feature_order=feature_cols
     )
     # pred_blocks / real_blocks: lista con 4 arrays (n_test, 3) en el orden de HORIZONS
+    # target_cols = [energia_kwh, agua_litros, costo_total_usd] -> agua es la columna 1
+
+    # Deshacer el log1p de agua_litros y evitar negativos (energia/agua/costo
+    # nunca pueden ser negativos, pero la capa de salida es lineal)
+    for blocks in (pred_blocks, real_blocks):
+        for b in blocks:
+            b[:, 1] = np.expm1(b[:, 1])
+            np.clip(b, 0, None, out=b)
 
     # -----------------------------
     # 8) Métricas y gráficas por horizonte
