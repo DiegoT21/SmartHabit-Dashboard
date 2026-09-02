@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import argparse
 import numpy as np
@@ -10,12 +11,20 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
 from tensorflow.keras.callbacks import EarlyStopping
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # =========================================
 # Config
 # =========================================
-DEFAULT_CSV = r"C:\Users\diego\Desktop\Proyecto SamSung Final\Data Set\dataset_consumo_total_1y.csv"
-OUT_DIR = r"C:\Users\diego\Desktop\Proyecto SamSung Final\Pred_vs_Real"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_CSV = os.path.join(BASE_DIR, "Data Set", "dataset_consumo_total_1y.csv")
+OUT_DIR = os.path.join(BASE_DIR, "Pred_vs_Real")
+STATIC_DIR = os.path.join(BASE_DIR, "Dashboard", "static")
+
+# Cuantos puntos de prueba (por horizonte) exportar al JSON del dashboard.
+# None = todos los puntos disponibles en el set de prueba.
+MAX_PUNTOS_JSON = None
 
 # Ventana y horizontes (en horas)
 WINDOW = 168
@@ -237,8 +246,9 @@ def main(args):
             plt.savefig(out_path, dpi=150, bbox_inches="tight")
             plt.close()
 
-        # Agregar filas al JSON para este horizonte (tomamos hasta 200 puntos)
-        n_take = min(200, real_h.shape[0])
+        # Agregar filas al JSON para este horizonte (todo el set de prueba,
+        # salvo que MAX_PUNTOS_JSON limite el tamaño)
+        n_take = real_h.shape[0] if MAX_PUNTOS_JSON is None else min(MAX_PUNTOS_JSON, real_h.shape[0])
         for k in range(n_take):
             # timestamp objetivo = tiempo base + h horas
             target_time = pd.to_datetime(times_test[k]) + pd.to_timedelta(h, unit="h")
@@ -265,7 +275,8 @@ def main(args):
     # -----------------------------
     # 9) Guardar JSON para dashboard
     # -----------------------------
-    json_path = os.path.join(OUT_DIR, "predicciones_multihorizonte.json")
+    os.makedirs(STATIC_DIR, exist_ok=True)
+    json_path = os.path.join(STATIC_DIR, "predicciones_multihorizonte.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(json_rows, f, indent=2, ensure_ascii=False)
     print(f"💾 JSON guardado en: {json_path}")
