@@ -22,6 +22,15 @@ const CHART_DEFAULTS = {
     font: { family: "'Inter', sans-serif", size: 11 }
 };
 
+// Paleta de marca Samsung: azul primario + azul cielo secundario + ámbar/rosa funcionales
+const PALETTE = {
+    energia: "#4c6ef5",
+    energiaFill: "rgba(76, 110, 245, 0.18)",
+    agua: "#38bdf8",
+    costo: "#fbbf24",
+    critico: "#fb7185",
+};
+
 Chart.defaults.color = CHART_DEFAULTS.color;
 Chart.defaults.borderColor = CHART_DEFAULTS.borderColor;
 Chart.defaults.font = CHART_DEFAULTS.font;
@@ -44,7 +53,7 @@ function chartOptions(extra = {}) {
                 backgroundColor: "rgba(15, 23, 42, 0.95)",
                 titleColor: "#f1f5f9",
                 bodyColor: "#cbd5e1",
-                borderColor: "rgba(16, 185, 129, 0.3)",
+                borderColor: "rgba(76, 110, 245, 0.3)",
                 borderWidth: 1,
                 padding: 12,
                 cornerRadius: 8
@@ -105,7 +114,7 @@ function mostrarAhorro() {
 
     const habito = ahorro.habito;
     const detectado = ahorro.ahorro_detectado;
-    const scoreColor = habito.eco_score >= 80 ? "#34d399" : habito.eco_score >= 60 ? "#fbbf24" : "#fb7185";
+    const scoreColor = habito.eco_score >= 80 ? PALETTE.energia : habito.eco_score >= 60 ? PALETTE.costo : PALETTE.critico;
 
     const habitoBox = document.getElementById("habitoBox");
     habitoBox.innerHTML = `
@@ -120,26 +129,26 @@ function mostrarAhorro() {
                 <div class="eco-score-label">EcoScore de hábitos</div>
                 <div class="eco-score-tag" style="color:${scoreColor}">${habito.clasificacion}</div>
                 <div class="eco-score-breakdown">
-                    <span>🔴 ${habito.n_alertas_criticas} críticas</span>
-                    <span>🟡 ${habito.n_alertas_moderadas} moderadas</span>
-                    <span>🔵 ${habito.n_alertas_leves} leves</span>
+                    <span><span class="dot dot--critica"></span>${habito.n_alertas_criticas} críticas</span>
+                    <span><span class="dot dot--moderada"></span>${habito.n_alertas_moderadas} moderadas</span>
+                    <span><span class="dot dot--leve"></span>${habito.n_alertas_leves} leves</span>
                 </div>
             </div>
         </div>
         <div class="kpi kpi--savings kpi--savings-highlight">
-            <div class="kpi-icon">✨</div>
+            <div class="kpi-icon"><svg class="icon"><use href="#i-trend-down"/></svg></div>
             <div class="kpi-title">Ahorro detectado por IA</div>
             <div class="kpi-value">$${detectado.proyeccion_mensual_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span class="kpi-value-unit">/mes</span></div>
             <div class="kpi-sub">${detectado.descripcion}</div>
         </div>
         <div class="kpi kpi--savings">
-            <div class="kpi-icon">⚡</div>
+            <div class="kpi-icon"><svg class="icon"><use href="#i-zap"/></svg></div>
             <div class="kpi-title">Picos de consumo</div>
             <div class="kpi-value">$${detectado.picos_usd_periodo.toFixed(2)}</div>
             <div class="kpi-sub">Sobrecosto detectado en el período evaluado</div>
         </div>
         <div class="kpi kpi--savings">
-            <div class="kpi-icon">💧</div>
+            <div class="kpi-icon"><svg class="icon"><use href="#i-droplet"/></svg></div>
             <div class="kpi-title">Fugas nocturnas</div>
             <div class="kpi-value">$${detectado.fugas_usd_periodo.toFixed(2)}</div>
             <div class="kpi-sub">Agua desperdiciada fuera de horario habitual</div>
@@ -149,7 +158,7 @@ function mostrarAhorro() {
     const box = document.getElementById("kpiAhorroBox");
     box.innerHTML = `
         <div class="kpi kpi--savings">
-            <div class="kpi-icon">📊</div>
+            <div class="kpi-icon"><svg class="icon"><use href="#i-bar-chart"/></svg></div>
             <div class="kpi-title">Escenario 10% de ahorro</div>
             <div class="kpi-value">$${ahorro.escenarios_ilustrativos.ahorro_10pct_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             <div class="kpi-sub">Si reduces 10% el consumo histórico total</div>
@@ -159,7 +168,7 @@ function mostrarAhorro() {
     ahorro.ahorro_predicho_futuro.forEach(a => {
         box.innerHTML += `
             <div class="kpi kpi--savings">
-                <div class="kpi-icon">⏱</div>
+                <div class="kpi-icon"><svg class="icon"><use href="#i-clock"/></svg></div>
                 <div class="kpi-title">Ahorro futuro ${a.horizonte_horas}h</div>
                 <div class="kpi-value">$${a.ahorro_10pct_usd.toFixed(2)}</div>
                 <div class="kpi-sub">Escenario 10% · Costo est. $${a.costo_estimado_usd.toFixed(2)}</div>
@@ -193,11 +202,11 @@ function mostrarAlertas() {
 
     resumen.textContent = `${alertas.total_alertas} alertas detectadas · Presupuesto mensual $${alertas.presupuesto_mensual_usd}`;
 
-    const icons = { energia: "⚡", agua: "💧", costo: "💵" };
+    const icons = { energia: "i-zap", agua: "i-droplet", costo: "i-dollar" };
 
     lista.innerHTML = alertas.alertas.map(a => `
         <div class="alerta-card alerta-card--${a.severidad}">
-            <div class="alerta-icon">${icons[a.variable] || "🔔"}</div>
+            <div class="alerta-icon"><svg class="icon"><use href="#${icons[a.variable] || "i-bell"}"/></svg></div>
             <div class="alerta-body">
                 <h4>${a.mensaje}</h4>
                 <p>${a.recomendacion}</p>
@@ -225,8 +234,8 @@ function graficarUltimos7Dias() {
                 {
                     label: "Energía (kWh)",
                     data: analitica.ultimos_7_dias.energia,
-                    borderColor: "#34d399",
-                    backgroundColor: gradientFill(g, "rgba(52, 211, 153, 0.2)", "rgba(52, 211, 153, 0)"),
+                    borderColor: PALETTE.energia,
+                    backgroundColor: gradientFill(g, "rgba(76, 110, 245, 0.2)", "rgba(76, 110, 245, 0)"),
                     fill: true,
                     tension: 0.4,
                     pointRadius: 3
@@ -234,14 +243,14 @@ function graficarUltimos7Dias() {
                 {
                     label: "Agua (L)",
                     data: analitica.ultimos_7_dias.agua,
-                    borderColor: "#22d3ee",
+                    borderColor: PALETTE.agua,
                     tension: 0.4,
                     pointRadius: 3
                 },
                 {
                     label: "Costo (USD)",
                     data: analitica.ultimos_7_dias.costo,
-                    borderColor: "#fbbf24",
+                    borderColor: PALETTE.costo,
                     tension: 0.4,
                     pointRadius: 3
                 }
@@ -289,21 +298,21 @@ function graficarPromedioPorHora() {
                 {
                     label: "Energía (kWh)",
                     data: analitica.promedio_hora.energia,
-                    borderColor: "#34d399",
+                    borderColor: PALETTE.energia,
                     tension: 0.3,
                     pointRadius: 0
                 },
                 {
                     label: "Agua (L)",
                     data: analitica.promedio_hora.agua,
-                    borderColor: "#22d3ee",
+                    borderColor: PALETTE.agua,
                     tension: 0.3,
                     pointRadius: 0
                 },
                 {
                     label: "Costo (USD)",
                     data: analitica.promedio_hora.costo,
-                    borderColor: "#fbbf24",
+                    borderColor: PALETTE.costo,
                     tension: 0.3,
                     pointRadius: 0
                 }
@@ -368,8 +377,8 @@ function actualizarDashboard() {
                 {
                     label: "Consumo real",
                     data: reales,
-                    borderColor: "#34d399",
-                    backgroundColor: gradientFill(g, "rgba(52, 211, 153, 0.18)", "rgba(52, 211, 153, 0)"),
+                    borderColor: PALETTE.energia,
+                    backgroundColor: gradientFill(g, PALETTE.energiaFill, "rgba(76, 110, 245, 0)"),
                     fill: true,
                     tension: 0.35,
                     pointRadius: 0,
@@ -378,7 +387,7 @@ function actualizarDashboard() {
                 {
                     label: "Predicción IA",
                     data: preds,
-                    borderColor: "#22d3ee",
+                    borderColor: PALETTE.agua,
                     borderDash: [6, 4],
                     tension: 0.35,
                     pointRadius: 0,
