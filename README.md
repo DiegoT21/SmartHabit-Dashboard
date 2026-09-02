@@ -46,8 +46,13 @@ predicciones_multihorizonte.json
   representan las alertas detectadas (usando la tarifa implícita del propio
   dataset) y un **EcoScore** (0-100) que penaliza según la severidad y
   frecuencia real de las alertas por día evaluado.
-- **Dashboard**: sitio estático (HTML/CSS/JS + Chart.js) que solo lee los 4
+- **Dashboard**: sitio estático (HTML/CSS/JS + Chart.js) que solo lee los
   JSON generados — no requiere backend ni conexión a internet una vez cargado.
+- **Simulación en vivo**: reproduce el histórico real (2012-2014, ~17.500
+  horas) hora por hora como si fuera un monitor en tiempo real — con
+  velocidad ajustable, control deslizante para saltar a cualquier día, y
+  detección de picos en vivo (comparando cada hora contra el percentil 95
+  histórico de esa misma hora del día).
 
 ## Ejecutar el dashboard
 
@@ -94,6 +99,7 @@ python Code/modelo_consumo_multihorizonte.py   # entrena y exporta predicciones_
 python Code/generar_alertas.py                 # exporta alertas_multihorizonte.json
 python Code/generar_analitica_consumo.py       # exporta analitica_consumo.json
 python Code/estimador_ahorro.py                # exporta estimacion_ahorro.json (usa las alertas)
+python Code/exportar_serie_historica.py        # exporta serie_historica.json (para la simulación en vivo)
 ```
 
 Todas las rutas son relativas a la raíz del repositorio, así que estos

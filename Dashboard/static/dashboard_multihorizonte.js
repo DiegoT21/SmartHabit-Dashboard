@@ -9,6 +9,7 @@ let chartTop5 = null;
 let chartHora = null;
 
 const PAGE_TITLES = {
+    vivo: "Simulación en vivo",
     predicciones: "Predicciones multihorizonte",
     ahorro: "Estimación de ahorro",
     analitica: "Análisis avanzado",
@@ -97,8 +98,9 @@ Promise.all([
     fetch("static/predicciones_multihorizonte.json").then(r => r.json()),
     fetch("static/estimacion_ahorro.json").then(r => r.json()),
     fetch("static/analitica_consumo.json").then(r => r.json()),
-    fetch("static/alertas_multihorizonte.json").then(r => r.json())
-]).then(([pred, ahorroData, analiticaData, alertasData]) => {
+    fetch("static/alertas_multihorizonte.json").then(r => r.json()),
+    fetch("static/serie_historica.json").then(r => r.json())
+]).then(([pred, ahorroData, analiticaData, alertasData, serieData]) => {
     dataset = pred;
     ahorro = ahorroData;
     analitica = analiticaData;
@@ -107,6 +109,7 @@ Promise.all([
     mostrarAhorro();
     mostrarAnalitica();
     mostrarAlertas();
+    initLive(serieData);
 }).catch(err => console.error("Error cargando datos:", err));
 
 function mostrarAhorro() {
@@ -408,4 +411,226 @@ function actualizarDashboard() {
             }
         })
     });
+}
+
+// ================================
+// SIMULACION EN VIVO
+// ================================
+let serieHistorica = [];
+let simIndex = 0;
+let simPlaying = false;
+let simTimer = null;
+let simThresholds = { energia: [], agua: [] };
+let liveChart = null;
+const SIM_WINDOW = 72;
+
+function percentil(valores, p) {
+    const arr = [...valores].sort((a, b) => a - b);
+    const idx = (arr.length - 1) * p;
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    if (lo === hi) return arr[lo];
+    return arr[lo] + (arr[hi] - arr[lo]) * (idx - lo);
+}
+
+function construirUmbralesPorHora(serie) {
+    const porHora = Array.from({ length: 24 }, () => ({ energia: [], agua: [] }));
+    serie.forEach(([ts, e, a]) => {
+        const h = new Date(ts).getHours();
+        porHora[h].energia.push(e);
+        porHora[h].agua.push(a);
+    });
+    return {
+        energia: porHora.map(h => percentil(h.energia, 0.95)),
+        agua: porHora.map(h => percentil(h.agua, 0.95))
+    };
+}
+
+function initLive(serie) {
+    serieHistorica = serie;
+    if (!serieHistorica.length) return;
+
+    simThresholds = construirUmbralesPorHora(serieHistorica);
+
+    const slider = document.getElementById("simSlider");
+    slider.max = serieHistorica.length - 1;
+    slider.value = 0;
+    slider.addEventListener("input", () => {
+        pausarSim();
+        simIndex = parseInt(slider.value, 10);
+        renderFrame(simIndex, false);
+    });
+
+    document.getElementById("btnPlayPause").addEventListener("click", toggleSim);
+    document.getElementById("btnReset").addEventListener("click", reiniciarSim);
+    document.getElementById("simSpeed").addEventListener("change", () => {
+        if (simPlaying) { pausarSim(); reproducirSim(); }
+    });
+
+    crearGraficoLive();
+    renderFrame(simIndex, false);
+}
+
+function crearGraficoLive() {
+    const ctx = document.getElementById("chart_live");
+    const g = ctx.getContext("2d");
+    liveChart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Energía (kWh)",
+                data: [],
+                borderColor: PALETTE.energia,
+                backgroundColor: gradientFill(g, PALETTE.energiaFill, "rgba(76, 110, 245, 0)"),
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+                borderWidth: 2
+            }]
+        },
+        options: chartOptions({
+            animation: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    grid: { color: "rgba(148, 163, 184, 0.06)" },
+                    ticks: { maxTicksLimit: 6, color: "#64748b", maxRotation: 0 }
+                },
+                y: {
+                    grid: { color: "rgba(148, 163, 184, 0.06)" },
+                    ticks: { color: "#64748b" }
+                }
+            }
+        })
+    });
+}
+
+function toggleSim() {
+    if (simPlaying) pausarSim(); else reproducirSim();
+}
+
+function reproducirSim() {
+    if (simIndex >= serieHistorica.length - 1) simIndex = 0;
+    simPlaying = true;
+    actualizarBotonPlay();
+    const speed = parseInt(document.getElementById("simSpeed").value, 10);
+    simTimer = setInterval(avanzarSim, speed);
+}
+
+function pausarSim() {
+    simPlaying = false;
+    actualizarBotonPlay();
+    if (simTimer) clearInterval(simTimer);
+    simTimer = null;
+}
+
+function reiniciarSim() {
+    pausarSim();
+    simIndex = 0;
+    document.getElementById("liveEventos").innerHTML =
+        '<p class="live-events-empty">Inicia la simulación para ver eventos en vivo.</p>';
+    liveChart.data.labels = [];
+    liveChart.data.datasets[0].data = [];
+    liveChart.update("none");
+    renderFrame(simIndex, false);
+}
+
+function actualizarBotonPlay() {
+    document.getElementById("iconPlayPause").setAttribute("href", simPlaying ? "#i-pause" : "#i-play");
+    document.getElementById("btnPlayPauseLabel").textContent = simPlaying ? "Pausar" : "Reproducir";
+    document.getElementById("liveBadgeText").textContent = simPlaying ? "En vivo" : "Pausado";
+    document.getElementById("liveBadge").classList.toggle("live-badge--on", simPlaying);
+}
+
+function avanzarSim() {
+    simIndex++;
+    if (simIndex >= serieHistorica.length) {
+        simIndex = 0;
+    }
+    renderFrame(simIndex, true);
+}
+
+function calcularAcumuladoDelDia(idx) {
+    const diaKey = serieHistorica[idx][0].slice(0, 10);
+    let energia = 0, agua = 0, costo = 0;
+    let i = idx;
+    while (i >= 0 && serieHistorica[i][0].slice(0, 10) === diaKey) {
+        energia += serieHistorica[i][1];
+        agua += serieHistorica[i][2];
+        costo += serieHistorica[i][3];
+        i--;
+    }
+    return { energia, agua, costo };
+}
+
+function renderFrame(idx, esAvance) {
+    const [ts, energia, agua] = serieHistorica[idx];
+    const fecha = new Date(ts);
+    const acumulado = calcularAcumuladoDelDia(idx);
+
+    document.getElementById("simSlider").value = idx;
+    document.getElementById("simFecha").textContent = formatearFechaSim(fecha);
+    document.getElementById("simDia").textContent =
+        `Día ${Math.floor(idx / 24) + 1} de ${Math.ceil(serieHistorica.length / 24)}`;
+
+    setLiveValue("live_energia", energia.toFixed(3));
+    setLiveValue("live_agua", agua.toFixed(2));
+    setLiveValue("live_costo", acumulado.costo.toFixed(2));
+
+    actualizarGraficoLive(idx);
+
+    if (esAvance) {
+        detectarEventoEnVivo(energia, agua, fecha);
+    }
+}
+
+function setLiveValue(id, text) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.classList.remove("flash");
+    void el.offsetWidth;
+    el.classList.add("flash");
+}
+
+function formatearFechaSim(fecha) {
+    return fecha.toLocaleString("es-ES", {
+        day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+    });
+}
+
+function actualizarGraficoLive(idx) {
+    const start = Math.max(0, idx - SIM_WINDOW + 1);
+    const slice = serieHistorica.slice(start, idx + 1);
+    liveChart.data.labels = slice.map(r => r[0].slice(5, 16).replace("T", " "));
+    liveChart.data.datasets[0].data = slice.map(r => r[1]);
+    liveChart.update("none");
+}
+
+function detectarEventoEnVivo(energia, agua, fecha) {
+    const hora = fecha.getHours();
+    const umbralEnergia = simThresholds.energia[hora] * 1.15;
+    const umbralAgua = simThresholds.agua[hora] * 1.15;
+
+    if (umbralEnergia > 0 && energia > umbralEnergia) {
+        const pct = ((energia / umbralEnergia - 1) * 100).toFixed(0);
+        agregarEventoLive("i-zap", `Pico de energía: ${energia.toFixed(2)} kWh a las ${hora}:00 (+${pct}% sobre lo habitual)`);
+    } else if (umbralAgua > 0.05 && agua > umbralAgua) {
+        const pct = ((agua / umbralAgua - 1) * 100).toFixed(0);
+        agregarEventoLive("i-droplet", `Pico de agua: ${agua.toFixed(1)} L a las ${hora}:00 (+${pct}% sobre lo habitual)`);
+    }
+}
+
+function agregarEventoLive(icono, texto) {
+    const cont = document.getElementById("liveEventos");
+    const vacio = cont.querySelector(".live-events-empty");
+    if (vacio) vacio.remove();
+
+    const item = document.createElement("div");
+    item.className = "live-event";
+    item.innerHTML = `<svg class="icon"><use href="#${icono}"/></svg><span>${texto}</span>`;
+    cont.prepend(item);
+
+    while (cont.children.length > 6) {
+        cont.removeChild(cont.lastChild);
+    }
 }

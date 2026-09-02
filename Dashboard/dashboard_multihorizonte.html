@@ -28,6 +28,10 @@
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 16,14"/></symbol>
     <symbol id="i-dollar" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6.5c0-2-2.2-3-5-3s-5 1.2-5 3c0 4 10 2.3 10 6.5 0 2-2.2 3.3-5 3.3s-5-1.3-5-3.3"/></symbol>
     <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 3a5 5 0 0 0-5 5v3.3c0 1-.4 2-1.2 2.7L4.5 15.3a1 1 0 0 0 .7 1.7h13.6a1 1 0 0 0 .7-1.7l-1.3-1.3a3.8 3.8 0 0 1-1.2-2.7V8a5 5 0 0 0-5-5Z"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0"/></symbol>
+    <symbol id="i-broadcast" viewBox="0 0 24 24"><circle cx="12" cy="18" r="1.6" fill="currentColor" stroke="none"/><path d="M8.5 14.5a5 5 0 0 1 7 0"/><path d="M5.5 11.3a9.3 9.3 0 0 1 13 0"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><polygon points="7,4 20,12 7,20" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.6 6.4"/><polyline points="3,5 3,11 9,11"/></symbol>
 </svg>
 
 <div class="bg-glow bg-glow--1"></div>
@@ -49,7 +53,11 @@
         </div>
 
         <nav class="sidebar-nav">
-            <button class="nav-item active" data-section="predicciones">
+            <button class="nav-item active" data-section="vivo">
+                <span class="nav-icon"><svg class="icon"><use href="#i-broadcast"/></svg></span>
+                <span class="nav-label">En vivo</span>
+            </button>
+            <button class="nav-item" data-section="predicciones">
                 <span class="nav-icon"><svg class="icon"><use href="#i-bar-chart"/></svg></span>
                 <span class="nav-label">Predicciones</span>
             </button>
@@ -85,7 +93,7 @@
         <header class="topbar">
             <div class="topbar-text">
                 <p class="topbar-eyebrow">Dashboard interactivo</p>
-                <h1 class="topbar-title" id="pageTitle">Predicciones multihorizonte</h1>
+                <h1 class="topbar-title" id="pageTitle">Simulación en vivo</h1>
             </div>
             <div class="topbar-status">
                 <span class="status-dot"></span>
@@ -95,7 +103,91 @@
 
         <div class="view">
 
-            <section id="predicciones" class="section active">
+            <section id="vivo" class="section active">
+                <div class="section-intro">
+                    <div class="section-intro-row">
+                        <div>
+                            <h2 class="section-title">Simulación en vivo</h2>
+                            <p>Reproduce el histórico real del hogar (2012-2014) hora por hora, como si fuera un monitor en tiempo real</p>
+                        </div>
+                        <div class="live-badge" id="liveBadge">
+                            <span class="live-dot"></span>
+                            <span id="liveBadgeText">Pausado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel--live-controls">
+                    <div class="live-controls-row">
+                        <button class="btn-live btn-live--primary" id="btnPlayPause">
+                            <svg class="icon"><use href="#i-play" id="iconPlayPause"/></svg>
+                            <span id="btnPlayPauseLabel">Reproducir</span>
+                        </button>
+                        <button class="btn-live" id="btnReset">
+                            <svg class="icon"><use href="#i-restart"/></svg>
+                            <span>Reiniciar</span>
+                        </button>
+                        <div class="control-group control-group--speed">
+                            <label for="simSpeed">Velocidad</label>
+                            <select id="simSpeed">
+                                <option value="500">Lenta · 1 día ≈ 12s</option>
+                                <option value="250" selected>Normal · 1 día ≈ 6s</option>
+                                <option value="125">Rápida · 1 día ≈ 3s</option>
+                                <option value="42">Muy rápida · 1 día ≈ 1s</option>
+                            </select>
+                        </div>
+                        <div class="sim-clock">
+                            <div class="sim-clock-date" id="simFecha">--</div>
+                            <div class="sim-clock-day" id="simDia">Día 0 de 0</div>
+                        </div>
+                    </div>
+                    <input type="range" id="simSlider" class="sim-slider" min="0" max="0" value="0">
+                </div>
+
+                <div class="kpi-box" id="liveKpiBox">
+                    <div class="kpi kpi--live">
+                        <div class="kpi-icon"><svg class="icon"><use href="#i-zap"/></svg></div>
+                        <div class="kpi-title">Energía en esta hora</div>
+                        <div class="kpi-value" id="live_energia">--</div>
+                        <div class="kpi-sub">kWh</div>
+                    </div>
+                    <div class="kpi kpi--live">
+                        <div class="kpi-icon"><svg class="icon"><use href="#i-droplet"/></svg></div>
+                        <div class="kpi-title">Agua en esta hora</div>
+                        <div class="kpi-value" id="live_agua">--</div>
+                        <div class="kpi-sub">Litros</div>
+                    </div>
+                    <div class="kpi kpi--live">
+                        <div class="kpi-icon"><svg class="icon"><use href="#i-dollar"/></svg></div>
+                        <div class="kpi-title">Costo acumulado hoy</div>
+                        <div class="kpi-value" id="live_costo">--</div>
+                        <div class="kpi-sub">USD</div>
+                    </div>
+                </div>
+
+                <div class="live-grid">
+                    <div class="panel panel--chart">
+                        <div class="panel-header">
+                            <h2>Energía en tiempo real</h2>
+                            <p>Últimas 72 horas simuladas</p>
+                        </div>
+                        <div class="chart-wrap chart-wrap--sm">
+                            <canvas id="chart_live"></canvas>
+                        </div>
+                    </div>
+                    <div class="panel panel--events">
+                        <div class="panel-header">
+                            <h2>Eventos detectados</h2>
+                            <p>Picos sobre el promedio histórico de esa hora</p>
+                        </div>
+                        <div class="live-events" id="liveEventos">
+                            <p class="live-events-empty">Inicia la simulación para ver eventos en vivo.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="predicciones" class="section">
                 <div class="hero-grid">
                     <div class="hero-card">
                         <span class="hero-label">Horizontes</span>
