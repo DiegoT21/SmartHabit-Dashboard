@@ -95,10 +95,16 @@ def inverse_targets(pred_scaled, real_scaled, scaler, n_features, feature_order)
     return pred_blocks, real_blocks
 
 
-def metrics_mae_mape(y_true, y_pred, eps=1e-8):
+def metrics_mae_wape(y_true, y_pred):
+    """
+    WAPE en vez de MAPE: agua_litros tiene muchas horas en 0, y el MAPE
+    clasico (error/real hora a hora) se dispara a valores absurdos ahi.
+    WAPE = suma(|error|) / suma(|real|) es el estandar para series con ceros.
+    """
     mae = np.mean(np.abs(y_true - y_pred))
-    mape = np.mean(np.abs((y_true - y_pred) / (np.abs(y_true) + eps))) * 100.0
-    return mae, mape
+    suma_real = np.sum(np.abs(y_true))
+    wape = (np.sum(np.abs(y_true - y_pred)) / suma_real * 100.0) if suma_real > 0 else 0.0
+    return mae, wape
 
 
 # =========================================
@@ -232,8 +238,8 @@ def main(args):
         # Métricas por variable
         var_names = ["energia_kwh", "agua_litros", "costo_total_usd"]
         for j, var in enumerate(var_names):
-            mae, mape = metrics_mae_mape(real_h[:, j], pred_h[:, j])
-            print(f"H{h:>2} - {var:16s} | MAE={mae:.4f} | MAPE={mape:.2f}%")
+            mae, wape = metrics_mae_wape(real_h[:, j], pred_h[:, j])
+            print(f"H{h:>2} - {var:16s} | MAE={mae:.4f} | WAPE={wape:.2f}%")
 
             # Gráfica
             plt.figure(figsize=(12, 5))

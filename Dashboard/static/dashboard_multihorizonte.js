@@ -342,16 +342,19 @@ function actualizarDashboard() {
     else { realKey = "costo_real_usd"; predKey = "costo_pred_usd"; unidad = "USD"; }
 
     const errores = datos.map(d => Math.abs(d[realKey] - d[predKey]));
-    const mae = errores.reduce((a, b) => a + b, 0) / errores.length;
+    const sumaAbsErrores = errores.reduce((a, b) => a + b, 0);
+    const mae = sumaAbsErrores / errores.length;
 
-    const mape = datos.reduce((acc, d) =>
-        acc + Math.abs((d[realKey] - d[predKey]) / (Math.abs(d[realKey]) + 1e-8)),
-    0) / datos.length * 100;
+    // WAPE en vez de MAPE clásico: agua tiene muchas horas en 0 L, y dividir
+    // error/real hora a hora ahi dispara el MAPE a numeros absurdos. WAPE
+    // (error total / consumo total) es el estandar para series con ceros.
+    const sumaAbsReales = datos.reduce((acc, d) => acc + Math.abs(d[realKey]), 0);
+    const wape = sumaAbsReales > 0 ? (sumaAbsErrores / sumaAbsReales) * 100 : 0;
 
     document.getElementById("kpi_mae").innerText = mae.toFixed(4) + " " + unidad;
-    document.getElementById("kpi_mape").innerText = mape.toFixed(2) + "%";
+    document.getElementById("kpi_mape").innerText = wape.toFixed(2) + "%";
     document.getElementById("kpi_points").innerText = datos.length.toLocaleString();
-    document.getElementById("hero_mape").innerText = mape.toFixed(1) + "%";
+    document.getElementById("hero_mape").innerText = wape.toFixed(1) + "%";
 
     const tbody = document.getElementById("tablaDatos");
     tbody.innerHTML = datos.slice(0, 200).map(d => `

@@ -404,7 +404,11 @@ def main():
         "generado_en": datetime.now().isoformat(),
         "presupuesto_mensual_usd": PRESUPUESTO_MENSUAL_USD,
         "total_alertas": len(alertas),
-        "alertas": alertas[:500]  # evita JSON gigante
+        # Tope de seguridad generoso: con datasets normales nunca se alcanza,
+        # pero evita un JSON descontrolado si el periodo evaluado crece mucho.
+        # El motor de habitos (estimador_ahorro.py) lee esta misma lista, asi
+        # que truncarla de mas subestimaria el ahorro detectado y el EcoScore.
+        "alertas": alertas[:5000]
     }
 
     with open(OUT_ALERTAS_JSON, "w", encoding="utf-8") as f:
